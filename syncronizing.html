@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bouncing Ball with Background Color Change</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Set up scene, camera, and renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;  // Enable shadow rendering
+    document.body.appendChild(renderer.domElement);
+
+    // Create a sphere (bouncing ball)
+    const geometry = new THREE.SphereGeometry(0.5, 32, 32);  // Sphere dimensions
+    const material = new THREE.MeshPhongMaterial({ color: 0x0000ff });  // Initial color: Blue
+    const ball = new THREE.Mesh(geometry, material);
+    ball.castShadow = true;  // Enable shadow casting for the ball
+    scene.add(ball);
+
+    // Set initial position for the ball
+    ball.position.set(0, 0, 0);
+
+    // Set up the light source (fixed at the upper left corner)
+    const light = new THREE.PointLight(0xFFFFAA, 1, 100);
+    light.position.set(-10, 10, 10);  // Position: upper left corner
+    light.castShadow = true;  // Enable shadows from the light
+    scene.add(light);
+
+    // Set up ground plane to catch the shadows (optional for better shadow visualization)
+    const planeGeometry = new THREE.PlaneGeometry(20, 20);
+    const planeMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1;
+    plane.receiveShadow = true;  // Plane receives shadows
+    scene.add(plane);
+
+    // Set the camera position
+    camera.position.z = 5;
+
+    // Define the movement speed and direction
+    let speedX = 0.05;
+    let speedY = 0.05;
+
+    // Define the limits of the viewing area
+    const maxX = 3;
+    const minX = -3;
+    const maxY = 3;
+    const minY = -3;
+
+    // Define color pairs for sphere and background
+    const sphereColors = [0x0000ff, 0x800080, 0x8B4513];  // Blue, Purple, Brown
+    const bgColors = ['#FFFF00', '#FF0000', '#0000FF'];  // Yellow, Red, Blue
+    let currentColorIndex = 0;
+
+    // Function to change colors of both the ball and the background
+    function changeColors() {
+      // Update the sphere's color
+      ball.material.color.setHex(sphereColors[currentColorIndex]);
+      // Update the background color
+      document.body.style.backgroundColor = bgColors[currentColorIndex];
+
+      // Cycle through the colors (wrap around after the last color)
+      currentColorIndex = (currentColorIndex + 1) % sphereColors.length;
+    }
+
+    // Animation function to make the ball move and bounce
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Move the ball by altering its x and y positions
+      ball.position.x += speedX;
+      ball.position.y += speedY;
+
+      // Check if the ball has reached the edges of the viewport and bounce
+      if (ball.position.x > maxX || ball.position.x < minX) {
+        speedX *= -1;  // Reverse direction on X axis
+        changeColors();  // Change colors of sphere and background
+      }
+      if (ball.position.y > maxY || ball.position.y < minY) {
+        speedY *= -1;  // Reverse direction on Y axis
+        changeColors();  // Change colors of sphere and background
+      }
+
+      // Render the scene with the camera
+      renderer.render(scene, camera);
+    }
+
+    // Call the animation function
+    animate();
+  </script>
+</body>
+
+</html>
